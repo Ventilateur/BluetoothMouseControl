@@ -25,11 +25,12 @@
   * *java -jar MouseControl.jar COMx*
   * *java -jar MouseControl.jar COMx 57600*
   </br>
-| Tables        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
+|| *Year* || *Temperature (low)* || *Temperature (high)* ||
+|| 1900 || -10 || 25 ||
+|| 1910 || -15 || 30 ||
+|| 1920 || -10 || 32 ||
+|| 1930 || _N/A_ || _N/A_ ||
+|| 1940 || -2 || 40 ||
 
 
 
