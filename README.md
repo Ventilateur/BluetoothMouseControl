@@ -40,7 +40,10 @@
 **5. Technical details:**
   * MPU-9150 is used here for capturing movements. A Madgwick filter is then applied in order to fusion the datas from accelerometer
   and gyroscope. The output is rotation angles around axe X (known as Pitch) and axe Y (known as Roll). However, the magnetometer is not used here due to it's speed and complexity. 
-  * Next step is to compute relative angles between two measure and send these datas via bluetooth. In order to minimize the frame's size, data transfered will be in 5 bytes: [MODE][ROLL][PITCH][\r][\n]
+  * Next step is to compute relative angles between two measure and send these datas via bluetooth. In order to minimize the frame's size, data will be transfered in 5 bytes: [MODE][ROLL][PITCH][\r][\n] and will be decoded by character.
+  * [MODE] : 
+    * 'R' means reset mouse position to the screen's center </br>
+    * 
 
 
 
