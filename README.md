@@ -2,10 +2,10 @@
 **Control computer mouse "on air" via bluetooth, technical details can be found at the end of file** </br>
 
 1. Hardware required: </br>
-* Teensy 3.2
-* MPU9150 breakout board
-* HC-06 bluetooth module
-* Push button
+  * Teensy 3.2
+  * MPU9150 breakout board
+  * HC-06 bluetooth module
+  * Push button
 </br>
 
 2. Software required: </br>
