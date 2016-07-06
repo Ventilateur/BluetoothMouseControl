@@ -38,6 +38,8 @@
   </br>
 
 **5. Technical details:**
+  * MPU-9150 is used here for capturing movements. A Madgwick filter is then applied in order to fusion the datas from accelerometer
+  and gyroscope 
 
 
 
