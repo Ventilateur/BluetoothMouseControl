@@ -37,6 +37,7 @@
   * *java -jar MouseControl.jar COMx 57600*
   </br>
 
+**5. Technical details:**
 
 
 
