@@ -14,8 +14,8 @@
   </br>
 
 3. Wiring: </br>
-  * MPU-9150 to Teensy        
-    * Vcc => 3.3V   
+  * MPU-9150 ========== Teensy        
+    * VCC -------------------> 3.3V   
     * GND => GND
     * SCL => 19 (SCL0)
     * SDA => 18 (SDA0)
