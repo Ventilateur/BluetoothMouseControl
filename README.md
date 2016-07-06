@@ -22,8 +22,8 @@
   * HC-06 ============= Teensy
     * VCC -------------------> Vin   
     * GND -------------------> GND
-    * Tx  -------------------> 9 (Rx2)
-    * Rx  -------------------> 10 (Tx2)
+    * Tx    -------------------> 9 (Rx2)
+    * Rx    -------------------> 10 (Tx2)
 4. Run: </br>
   Compile and load MouseControl.ino to Teensy board, remember to configure the bluetooth's baud rate to 57600bps </br>
   Run the .jar file with one of these commands: </br>
