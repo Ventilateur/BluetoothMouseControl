@@ -56,10 +56,12 @@ public class Main {
 			break;
 		case (1):
 			System.out.println("Port " + args[0] + " chosen");
+			portName = args[0];
 			chooseBaudRate();
 			break;
 		case (2):
 			System.out.println("Port " + args[0] + " chosen");
+			portName = args[0];
 			baudRate = Integer.parseInt(args[1]);
 			if (!checkBaudRate(baudRate)) {
 				baudRate = 9600;
