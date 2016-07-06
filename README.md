@@ -1,19 +1,19 @@
 # BluetoothMouseControl
 **Control computer mouse "on air" via bluetooth, technical details can be found at the end of file** </br>
 
-1. Hardware required: </br>
+1. Hardware required:
   * Teensy 3.2
   * MPU9150 breakout board
   * HC-06 bluetooth module
   * Push button
   </br>
 
-2. Software required: </br>
+2. Software required:
   * Java SE on computer
   * All required libraries are in folder *lib*
   </br>
 
-3. Wiring: </br>
+3. Wiring:
   * MPU-9150 ========== Teensy        
     * VCC -------------------> 3.3V   
     * GND -------------------> GND
@@ -27,7 +27,9 @@
   * Button ==============Teensy
     * Pin0 --------------------> 20
     * Pin1 --------------------> 3.3V
-4. Run: </br>
+  </br>
+
+4. Run:
   Compile and load MouseControl.ino to Teensy board, remember to configure the bluetooth's baud rate to 57600bps </br>
   Run the .jar file with one of these commands: </br>
   * *java -jar MouseControl.jar*
