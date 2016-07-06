@@ -14,10 +14,12 @@
   </br>
 
 3. Wiring: </br>
-| Teensy pin | MPU-9150   | HC-06      | Button     |
-|:----------:|:----------:|:----------:|:----------:|
-| Vin        |            | Vcc        |            |
-| GND        | GND        | GND        |            |
+  * MPU-9150 ============= Teensy        
+   * Vcc -----------------> 3.3V   
+   * GND -----------------> GND
+   * SCL -----------------> 19 (SCL0)
+   * SDA -----------------> 18 (SDA0)
+  * HC-06
 4. Run: </br>
   Compile and load MouseControl.ino to Teensy board, remember to configure the bluetooth's baud rate to 57600bps </br>
   Run the .jar file with one of these commands: </br>
@@ -25,12 +27,6 @@
   * *java -jar MouseControl.jar COMx*
   * *java -jar MouseControl.jar COMx 57600*
   </br>
-|| *Year* || *Temperature (low)* || *Temperature (high)* ||
-|| 1900 || -10 || 25 ||
-|| 1910 || -15 || 30 ||
-|| 1920 || -10 || 32 ||
-|| 1930 || _N/A_ || _N/A_ ||
-|| 1940 || -2 || 40 ||
 
 
 
