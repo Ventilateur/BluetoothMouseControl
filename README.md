@@ -7,4 +7,9 @@ Hardware required:
 * Push button
 </br>
 
-Software required:
+Software required: </br>
+* Java SE on computer
+* All required libraries are in folder *lib*
+</br>
+
+
