@@ -2,7 +2,6 @@
 
 #include <SoftwareSerial.h>
 #include <FilterTwoPole.h>
-#include <MadgwickAHRS.h>
 #include <MPU6050.h>
 #include "math_3D_IMU.h"
 #include <Bounce.h>
@@ -12,14 +11,10 @@
 #include "constants.h"
 
 #define BUILT_IN_LED	13
-#define BLUETOOTH Serial2
+#define BLUETOOTH		Serial2
 
-Vect3D_int16 aRaw, gRaw, mRaw;
 Vect3D_float accel, gyro, mag;
-YPR anglesPrev, angles;
-int deltaRoll, deltaPitch;
-Quaternion quat;
-char frame[3];
+int depX, depY, depZ;
 
 uint16_t delt_t = 0;							// used to control display output rate
 long dt = 0;
@@ -28,13 +23,20 @@ float dR = 0.0f, dP = 0.0f;
 int time = 0;									// store actual time
 int pulseLength = 0, tmp = 0;					// for button measurement
 
-bool onButton = false;
+// frame to be sent
+char frame[6];
 MouseModes mouseMode = MOVE;
+ButtonModes LB = RELEASED;
+ButtonModes RB = RELEASED;
+int8_t r = OFFSET_ASCII;
+int8_t p = OFFSET_ASCII;
 
 MPU9150 mpu;
-Madgwick filter;
-FilterTwoPole lpf1, lpf2, lpf3, lpf4;
-Bounce button(BUTTON_PIN, 10);
+FilterTwoPole lpfx, lpfy, lpfz;
+
+Bounce buttonFunc(FUNC_BUTTON, 50);
+Bounce buttonLeft(LEFT_BUTTON, 50);
+Bounce buttonRight(RIGHT_BUTTON, 50);
 
 
 void setup() {
@@ -42,8 +44,10 @@ void setup() {
 	digitalWrite(BUILT_IN_LED, HIGH);
 
 	// set reset/calibrate button, 
-	// 1 button pin goes to BUTTON_PIN, the other goes to Vcc, because it's on INPUT_PULLDOWN
-	pinMode(BUTTON_PIN, INPUT_PULLDOWN);
+	// 1 button pin goes to FUNC_BUTTON, the other goes to Vcc, because it's on INPUT_PULLDOWN
+	pinMode(FUNC_BUTTON, INPUT_PULLDOWN);
+	pinMode(LEFT_BUTTON, INPUT_PULLDOWN);
+	pinMode(RIGHT_BUTTON, INPUT_PULLDOWN);
 
 	// setup bluetooth connection
 	Serial.begin(BT_BAUDRATE);
@@ -58,11 +62,10 @@ void setup() {
 	mpu.setFullScaleAccelRange(ACCEL_RANGE_MODE); 
 	mpu.setIntDataReadyEnabled(INT_ENABLE); 
 
-	// configure low pass filter for 3 channel yaw, pitch and roll
-	lpf1.setAsFilter(FILTER_TYPE_12, CUTOFF_FREQ_12);
-	lpf2.setAsFilter(FILTER_TYPE_12, CUTOFF_FREQ_12);
-	lpf3.setAsFilter(FILTER_TYPE_34, CUTOFF_FREQ_34);
-	lpf4.setAsFilter(FILTER_TYPE_34, CUTOFF_FREQ_34);
+	// configure filter for gyro's datas
+	lpfx.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
+	lpfy.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
+	lpfz.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
 }
 
 
@@ -84,15 +87,11 @@ void loop() {
 		mpu.getGyroScaled(&gyro.x, &gyro.y, &gyro.z);
 	}
 
-	// calculate angles
-	filter.update(1000.0f / delt_t, deg2rad(gyro.x), deg2rad(gyro.y), deg2rad(gyro.z), accel.x, accel.y, accel.z, mag.y, mag.x, -mag.z);
-	quat.w = filter.q0; quat.x = filter.q1; quat.y = filter.q2; quat.z = filter.q3;
-	angles.getFromQuaternion(quat);
-
-	// low filter the results
-	for (int i = 1; i < ITERATION_12; i++) {
-		angles.pitch = lpf1.input(angles.pitch);
-		angles.roll = lpf2.input(angles.roll);
+	// gyro filtering
+	for (int i = 0; i < GYRO_FILTER_ITER; i++) {
+		gyro.x = lpfx.input(gyro.x);
+		gyro.y = lpfy.input(gyro.y);
+		gyro.z = lpfz.input(gyro.z);
 	}
 
 	// switch mouse mode
@@ -100,79 +99,68 @@ void loop() {
 	case MOVE:
 		if (millis() - dt > SEND_RATE_MS) {
 			dt = millis();
-			calculateMousePos();	// calculate position and set frame
-			BLUETOOTH.println(F(frame));
+			calculateMousePos();	
+			setFrameVal(MOVE, LB, RB, r, p);
+			BLUETOOTH.print(F(frame));
 			BLUETOOTH.flush();
 		}
 		break;
 	case STOP:
-		setFrameVal(STOP, OFFSET_ASCII, OFFSET_ASCII);
-		BLUETOOTH.println(F(frame));
+		setFrameVal(STOP, LB, RB, OFFSET_ASCII, OFFSET_ASCII);
+		BLUETOOTH.print(F(frame));
 		BLUETOOTH.flush();
 		break;
 	case RESET:
-		setFrameVal(RESET, OFFSET_ASCII, OFFSET_ASCII);
-		BLUETOOTH.println(F(frame));
+		setFrameVal(RESET, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+		BLUETOOTH.print(F(frame));
 		BLUETOOTH.flush();
 		mouseMode = MOVE;
 		break;
 	default:
-		setFrameVal(STOP, OFFSET_ASCII, OFFSET_ASCII);
-		BLUETOOTH.println(F(frame));
+		setFrameVal(STOP, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+		BLUETOOTH.print(F(frame));
 		BLUETOOTH.flush();
 		break;
 	}
 	
 	// send data to default serial port (debug only)
-	Serial.print("Roll, Pitch = " + String(deltaRoll) + "," + deltaPitch + "\r\n");
+	Serial.println("XYZ = " + String(gyro.x) + " , " + gyro.y + " , " + gyro.z);
 	Serial.flush();
-
-	// update values
-	anglesPrev.pitch = angles.pitch;
-	anglesPrev.roll = angles.roll;
 
 	delay(LOOP_DELAY_MS);
 }
 
 
 void calculateMousePos() {
-	// calculate relative mouvement
-	dP = angles.pitch - anglesPrev.pitch;
-	dR = angles.roll - anglesPrev.roll;
-	for (int i = 1; i < ITERATION_34; i++) {
-		dR = lpf3.input(dR);
-		dP = lpf4.input(dP);
-	}
-	deltaRoll = (int)((dR)* DELTA_MULTIPLIER);
-	deltaPitch = (int)((dP)* DELTA_MULTIPLIER);
+	// horizontal mouse movement (axe X) coressponds to the rotation around axe Z of the gyro
+	// vertical mouse movement (axe Y) coressponds to the rotation around axe Y of the gyro
+	depX = (int)gyro.z;
+	depY = (int)gyro.y;
 
 	// limit deplacement interval
-	if (deltaRoll > LIMIT_DEPLACE) deltaRoll = LIMIT_DEPLACE;
-	else if (deltaRoll < (-1) * LIMIT_DEPLACE) deltaRoll = (-1) * LIMIT_DEPLACE;
-	if (deltaPitch > LIMIT_DEPLACE) deltaPitch = LIMIT_DEPLACE;
-	else if (deltaPitch < (-1) * LIMIT_DEPLACE) deltaPitch = (-1) * LIMIT_DEPLACE;
+	if (depX > LIMIT_DEPLACE) depX = LIMIT_DEPLACE;
+	else if (depX < (-1) * LIMIT_DEPLACE) depX = (-1) * LIMIT_DEPLACE;
+	if (depY > LIMIT_DEPLACE) depY = LIMIT_DEPLACE;
+	else if (depY < (-1) * LIMIT_DEPLACE) depY = (-1) * LIMIT_DEPLACE;
 
-
-	// construct a communication frame, avoiding command characters (00-32 and 127)
-	int8_t f1 = (int8_t)deltaRoll >= 0 ? (int8_t)deltaRoll + OFFSET_ASCII : (int8_t)deltaRoll;
-	if (f1 == DEL_CHAR) f1 = DEL_CHAR - 1;
-	int8_t f2 = (int8_t)deltaPitch >= 0 ? (int8_t)deltaPitch + OFFSET_ASCII : (int8_t)deltaPitch;
-	if (f2 == DEL_CHAR) f2 = DEL_CHAR - 1;
-	setFrameVal(MOVE, f1, f2);
+	// update r and p values, avoiding command characters (00-32 and 127)
+	r = (int8_t)depX >= 0 ? (int8_t)depX + OFFSET_ASCII : (int8_t)depX;
+	if (r == DEL_CHAR) r = DEL_CHAR - 1;
+	p = (int8_t)depY >= 0 ? (int8_t)depY + OFFSET_ASCII : (int8_t)depY;
+	if (p == DEL_CHAR) p = DEL_CHAR - 1;
 }
 
 
 void buttonCheck() {
 
-	// check button changing state
-	if (button.update()) {
-		Serial.println("maaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-		if (button.risingEdge()) {
+	// check function button changing state
+	if (buttonFunc.update()) {
+		if (buttonFunc.risingEdge()) {
 			// memorize time at rising edge and stop the mouse
 			tmp = millis();							
 			mouseMode = STOP;
 		}
-		if (button.fallingEdge()) {					
+		if (buttonFunc.fallingEdge()) {					
 			// calculate pulse length at falling edge
 			pulseLength = millis() - tmp;
 			// mode 1: button click - reset position by sending command 'R'
@@ -185,11 +173,26 @@ void buttonCheck() {
 		}
 		pulseLength = 0;	// reset pulse length for the next event
 	}
+
+	// check left button state
+	if (buttonLeft.update()) {
+		if (buttonLeft.risingEdge()) LB = PRESSED;
+		if (buttonLeft.fallingEdge()) LB = RELEASED;
+	}
+
+	// check right button state
+	if (buttonRight.update()) {
+		if (buttonRight.risingEdge()) RB = PRESSED;
+		if (buttonRight.fallingEdge()) RB = RELEASED;
+	}
 }
 
 
-void setFrameVal(int8_t mode, int8_t r, int8_t p) {
-	frame[0] = mode;
-	frame[1] = r;
-	frame[2] = p;
+void setFrameVal(int8_t mouseMode, int8_t LB, int8_t RB, int8_t r, int8_t p) {
+	frame[0] = mouseMode;
+	frame[1] = LB;
+	frame[2] = RB;
+	frame[3] = r;
+	frame[4] = p;
+	frame[5] = '\n';
 }

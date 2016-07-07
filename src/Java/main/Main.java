@@ -11,7 +11,7 @@ import serialCommunication.*;
 
 public class Main {
 	
-	public static MouseControl serialPort = new MouseControl();
+	public static MouseControl controller = new MouseControl();
 	public static String portName;
 	public static int baudRate;
 	public static Scanner keyboard = new Scanner(System.in);
@@ -49,6 +49,8 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
+		controller.setCoefficientsAxeX(1.0f, 0.8f, 0.19f);
+		controller.setCoefficientsAxeY(1.0f, 0.8f, 0.19f);
 		switch (args.length) {
 		case (0):
 			choosePort();
@@ -73,7 +75,7 @@ public class Main {
 			System.exit(0);
 			break;
 		}
-		serialPort.openComm(portName, baudRate);
+		controller.openComm(portName, baudRate);
 		while (true);
 	}
 	
