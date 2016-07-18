@@ -69,18 +69,56 @@ float MPU9150::normalizeMag(int16_t val) {
 void MPU9150::getAccelScaled(float *ax, float *ay, float *az) {
 	int16_t a1, a2, a3;
 	getAcceleration(&a1, &a2, &a3);
-	*ax = normalize(a1, ACCEL_RANGE);
-	*ay = normalize(a2, ACCEL_RANGE);
-	*az = normalize(a3, ACCEL_RANGE);
+	uint8_t rangeMode = getFullScaleAccelRange();
+	int fullScaleRange;
+	switch (rangeMode) {
+	case (0) :
+		fullScaleRange = ACCEL_FCR_2;
+		break;
+	case (1) :
+		fullScaleRange = ACCEL_FCR_4;
+		break;
+	case (2) :
+		fullScaleRange = ACCEL_FCR_8;
+		break;
+	case (3) :
+		fullScaleRange = ACCEL_FCR_16;
+		break;
+	default:
+		fullScaleRange = ACCEL_FCR_2;
+		break;
+	}
+	*ax = normalize(a1, fullScaleRange);
+	*ay = normalize(a2, fullScaleRange);
+	*az = normalize(a3, fullScaleRange);
 }
 
 
 void MPU9150::getGyroScaled(float *gx, float *gy, float *gz) {
 	int16_t g1, g2, g3;
 	getRotation(&g1, &g2, &g3);
-	*gx = normalize(g1, GYRO_RANGE) - G_OFFSET_X;
-	*gy = normalize(g2, GYRO_RANGE) - G_OFFSET_Y;
-	*gz = normalize(g3, GYRO_RANGE) - G_OFFSET_Z;
+	uint8_t rangeMode = getFullScaleGyroRange();
+	int fullScaleRange;
+	switch (rangeMode) {
+	case (0) :
+		fullScaleRange = GYRO_FCR_250;
+		break;
+	case (1) :
+		fullScaleRange = GYRO_FCR_500;
+		break;
+	case (2) :
+		fullScaleRange = GYRO_FCR_1000;
+		break;
+	case (3) :
+		fullScaleRange = GYRO_FCR_2000;
+		break;
+	default:
+		fullScaleRange = GYRO_FCR_250;
+		break;
+	}
+	*gx = normalize(g1, fullScaleRange) - G_OFFSET_X;
+	*gy = normalize(g2, fullScaleRange) - G_OFFSET_Y;
+	*gz = normalize(g3, fullScaleRange) - G_OFFSET_Z;
 }
 
 

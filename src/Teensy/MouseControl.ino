@@ -11,7 +11,7 @@
 #include "constants.h"
 
 #define BUILT_IN_LED	13
-#define BLUETOOTH			Serial2
+#define BLUETOOTH		Serial2
 
 Vect3D_float accel, gyro, mag;
 int depX, depY, depZ;
@@ -20,8 +20,8 @@ uint16_t delt_t = 0;							// used to control display output rate
 long dt = 0;
 float dR = 0.0f, dP = 0.0f;
 
-int time = 0;											// store actual time
-int pulseLength = 0, tmp = 0;			// for button measurement
+int time = 0;									// store actual time
+int pulseLength = 0, tmp = 0;					// for button measurement
 
 // frame to be sent
 char frame[6];
@@ -43,7 +43,7 @@ void setup() {
 	pinMode(BUILT_IN_LED, OUTPUT);
 	digitalWrite(BUILT_IN_LED, HIGH);
 
-	// set reset/calibrate button,
+	// set reset/calibrate button, 
 	// 1 button pin goes to FUNC_BUTTON, the other goes to Vcc, because it's on INPUT_PULLDOWN
 	pinMode(FUNC_BUTTON, INPUT_PULLDOWN);
 	pinMode(LEFT_BUTTON, INPUT_PULLDOWN);
@@ -56,16 +56,21 @@ void setup() {
 	// configure the MPU-9150
 	Wire.begin();
 	mpu.initialize();
-	mpu.setRate(SAMPLE_RATE);
-	mpu.setDLPFMode(LPF_MODE);
-	mpu.setFullScaleGyroRange(GYRO_RANGE_MODE);
-	mpu.setFullScaleAccelRange(ACCEL_RANGE_MODE);
-	mpu.setIntDataReadyEnabled(INT_ENABLE);
+	mpu.setRate(SAMPLE_RATE); 
+	mpu.setDLPFMode(LPF_MODE); 
+	mpu.setFullScaleGyroRange(GYRO_RANGE_MODE); 
+	mpu.setFullScaleAccelRange(ACCEL_RANGE_MODE); 
+	mpu.setIntDataReadyEnabled(INT_ENABLE); 
 
 	// configure filter for gyro's datas
 	lpfx.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
 	lpfy.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
 	lpfz.setAsFilter(FILTER_TYPE_GYRO, CUTOFF_FREQ_GYRO);
+
+	// print configuration datas
+	Serial.println("Full scale gyro rate = " + String(mpu.getFullScaleGyroRange()));
+	Serial.println("Full scale accel rate = " + String(mpu.getFullScaleAccelRange()));
+	Serial.println("Offset gyro xyz = " + String(mpu.getXGyroOffset()) + mpu.getYGyroOffset() + mpu.getZGyroOffset());
 }
 
 
@@ -99,7 +104,7 @@ void loop() {
 	case MOVE:
 		if (millis() - dt > SEND_RATE_MS) {
 			dt = millis();
-			calculateMousePos();
+			calculateMousePos();	
 			setFrameVal(MOVE, LB, RB, r, p);
 			BLUETOOTH.print(F(frame));
 			BLUETOOTH.flush();
@@ -122,10 +127,13 @@ void loop() {
 		BLUETOOTH.flush();
 		break;
 	}
-
+	
 	// send data to default serial port (debug only)
-	Serial.println("XYZ = " + String(gyro.x) + " , " + gyro.y + " , " + gyro.z);
+#if DEBUG == true
+	Serial.print("G_A_XYZ = " + String(gyro.x) + " , " + gyro.y + " , " + gyro.z);
+	Serial.println(" , " + String(accel.x) + " , " + accel.y + " , " + accel.z);
 	Serial.flush();
+#endif
 
 	delay(LOOP_DELAY_MS);
 }
@@ -157,10 +165,10 @@ void buttonCheck() {
 	if (buttonFunc.update()) {
 		if (buttonFunc.risingEdge()) {
 			// memorize time at rising edge and stop the mouse
-			tmp = millis();
+			tmp = millis();							
 			mouseMode = STOP;
 		}
-		if (buttonFunc.fallingEdge()) {
+		if (buttonFunc.fallingEdge()) {					
 			// calculate pulse length at falling edge
 			pulseLength = millis() - tmp;
 			// mode 1: button click - reset position by sending command 'R'

@@ -23,8 +23,8 @@
 // MPU configuration
 #define SAMPLE_RATE			(7)
 #define LPF_MODE			(5)
-#define GYRO_RANGE_MODE		(2)
-#define ACCEL_RANGE_MODE	(2)
+#define GYRO_RANGE_MODE		(0)
+#define ACCEL_RANGE_MODE	(0)
 #define INT_ENABLE			(true)
 
 // gyroscope's filters configuration
@@ -33,6 +33,7 @@
 #define GYRO_FILTER_ITER	(5)
 
 // debug modes
+#define DEBUG				(true)
 #define LOOP_RATE_DISP		(false)
 
 // other stuffs

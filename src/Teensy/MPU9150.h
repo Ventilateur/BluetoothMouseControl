@@ -66,32 +66,11 @@
 #define GYRO_FCR_1000		(1000)  // GYRO_RANGE_MODE = 2
 #define GYRO_FCR_2000		(2000)  // GYRO_RANGE_MODE = 3
 
-#if GYRO_RANGE_MODE == 0
-	#define GYRO_RANGE		GYRO_FCR_250
-#elif GYRO_RANGE_MODE == 1
-	#define GYRO_RANGE		GYRO_FCR_500
-#elif GYRO_RANGE_MODE == 2
-	#define GYRO_RANGE		GYRO_FCR_1000
-#elif GYRO_RANGE_MODE == 3
-	#define GYRO_RANGE		GYRO_FCR_2000
-#endif
-
-
 // binding accel mode
 #define ACCEL_FCR_2			(2)		// ACCEL_RANGE_MODE = 0
 #define ACCEL_FCR_4			(4)		// ACCEL_RANGE_MODE = 1
 #define ACCEL_FCR_8			(8)		// ACCEL_RANGE_MODE = 2
 #define ACCEL_FCR_16		(16)	// ACCEL_RANGE_MODE = 3
-
-#if ACCEL_RANGE_MODE == 0 
-	#define ACCEL_RANGE		ACCEL_FCR_2
-#elif ACCEL_RANGE_MODE == 1
-	#define ACCEL_RANGE		ACCEL_FCR_4
-#elif ACCEL_RANGE_MODE == 2
-	#define ACCEL_RANGE		ACCEL_FCR_8
-#elif ACCEL_RANGE_MODE == 3
-	#define ACCEL_RANGE		ACCEL_FCR_16
-#endif
 
 // sensor constants
 #define MAX_16_BITS_VAL		(32768)
