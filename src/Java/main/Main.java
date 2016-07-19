@@ -10,20 +10,20 @@ import java.util.Scanner;
 import serialCommunication.*;
 
 public class Main {
-
+	
 	public static MouseControl controller = new MouseControl();
 	public static String portName;
 	public static int baudRate;
 	public static Scanner keyboard = new Scanner(System.in);
 	public static List<Integer> baudRates = new ArrayList<Integer>();
-
+	
 	public static void printPortsInfo() {
 		System.out.println("Here come all available ports:");
 		for (String port : Serial.list()) {
 			System.out.println(port);
 		}
 	}
-
+	
 	public static void choosePort() {
 		printPortsInfo();
 		System.out.println("Enter your port here:");
@@ -33,12 +33,12 @@ public class Main {
 			portName = keyboard.nextLine();
 		}
 	}
-
+	
 	public static boolean checkBaudRate(int baudRate) {
 		return (baudRate == 300  || baudRate == 1200  || baudRate == 2400  || baudRate == 4800 ||
 				baudRate == 9600 || baudRate == 19200 || baudRate == 38400 || baudRate == 57600);
 	}
-
+	
 	public static void chooseBaudRate() {
 		System.out.println("Set baud rate:");
 		baudRate = Integer.parseInt(keyboard.nextLine());
@@ -47,10 +47,10 @@ public class Main {
 			baudRate = Integer.parseInt(keyboard.nextLine());
 		}
 	}
-
+	
 	public static void main(String[] args) {
-		controller.setCoefficientsAxeX(1.0f, 0.8f, 0.09f);
-		controller.setCoefficientsAxeY(1.0f, 0.8f, 0.09f);
+		controller.setCoefficientsAxeX(1.0f, 0.4f, 0.08f);
+		controller.setCoefficientsAxeY(1.0f, 1.5f, 0.05f);
 		switch (args.length) {
 		case (0):
 			choosePort();
@@ -78,5 +78,5 @@ public class Main {
 		controller.openComm(portName, baudRate);
 		while (true);
 	}
-
+	
 }
