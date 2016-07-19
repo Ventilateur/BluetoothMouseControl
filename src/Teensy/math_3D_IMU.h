@@ -5,8 +5,35 @@
 
 #include "arduino.h"
 
-float deg2rad(float val);
-float rad2deg(float val);
+inline float deg2rad(float val) { return ((val / 180.0f) * PI); }
+
+inline float rad2deg(float val) { return ((val * 180.0f) / PI); }
+
+inline float calculateMagnitude3D(float x, float y, float z) {
+    return sqrtf(pow(x, 2) + pow(y, 2) + pow(z, 2));
+}
+
+class SphericalCoordinate {
+public:
+	SphericalCoordinate();
+	SphericalCoordinate(float r, float teta, float phi);
+	float calculateRFromCartesian(float x, float y, float z);
+	float calculateTetaFromCartesian(float x, float y, float z);
+	float calculatePhiFromCartesian(float x, float y, float z);
+
+	// getters + setters
+	float getR() { return r; }
+	float getTeta() { return teta; }
+	float getPhi() { return phi; }
+	void setR(float val) { r = val; }
+	void setTeta(float val) { teta = val; }
+	void setPhi(float val) { phi = val; }
+
+private:
+	float r;
+	float teta;
+	float phi;
+};
 
 class Quaternion {
 public:
@@ -48,15 +75,16 @@ public:
 	Vect3D_float norm();
 };
 
-class YPR {
+class TaitBryan {
 public:
 	float yaw;
 	float pitch;
 	float roll;
-	YPR();
-	YPR(float y, float p, float r);
+	TaitBryan();
+	TaitBryan(float y, float p, float r);
 	void getFrom3dVect(Vect3D_float accel, Vect3D_float gyro, Vect3D_float magne);
-	void getFromQuaternion(Quaternion q);
+	void getAnglesInDegFromQuaternion(Quaternion q);
+    void getAnglesInRadFromQuaternion(Quaternion q);
 };
 
 #endif

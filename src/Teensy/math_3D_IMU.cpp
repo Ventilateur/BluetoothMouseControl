@@ -1,18 +1,6 @@
-// 
-// 
-// 
 
 #include "math_3D_IMU.h"
 
-
-// ===================== basic operations ====================== //
-float deg2rad(float val) {
-	return ((val / 180.0f) * PI);
-}
-
-float rad2deg(float val) {
-	return ((val * 180.0f) / PI);
-}
 
 // ==================== Quaternion section ===================== //
 
@@ -113,15 +101,15 @@ Vect3D_float Vect3D_float::norm() {
 
 // ==================== Tait–Bryan angles section ====================== //
 
-YPR::YPR() {
+TaitBryan::TaitBryan() {
 	yaw = 0.0f; pitch = 0.0f; roll = 0.0f;
 }
 
-YPR::YPR(float y, float p, float r) {
+TaitBryan::TaitBryan(float y, float p, float r) {
 	yaw = y; pitch = p; roll = r;
 }
 
-void YPR::getFrom3dVect(Vect3D_float accel, Vect3D_float gyro, Vect3D_float magne) {
+void TaitBryan::getFrom3dVect(Vect3D_float accel, Vect3D_float gyro, Vect3D_float magne) {
 	roll = (atan2(accel.y, accel.z));
 	if (fabs(accel.y * sin(roll) + accel.z * cos(roll)) < 0.001f)
 		pitch = accel.x > 0 ? (PI / 2.0f) : (-PI / 2.0f);
@@ -135,11 +123,7 @@ void YPR::getFrom3dVect(Vect3D_float accel, Vect3D_float gyro, Vect3D_float magn
 	yaw = rad2deg(yaw);
 }
 
-void YPR::getFromQuaternion(Quaternion q) {
-	/*roll = atan2f(2.0f * (q.w * q.x + q.y * q.z), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
-	pitch = -asinf(2.0f * (q.x * q.z - q.w * q.y));
-	yaw = atan2f(2.0f * (q.w * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
-	*/
+void TaitBryan::getAnglesInDegFromQuaternion(Quaternion q) {
 	roll = atan2f((q.w * q.x + q.y * q.z), 0.5f - (q.x * q.x + q.y * q.y));
 	pitch = asinf(-2.0f * (q.x * q.z - q.w * q.y));
 	yaw = atan2f((q.x * q.y + q.w * q.z), 0.5f - (q.y * q.y + q.z * q.z));
@@ -147,4 +131,30 @@ void YPR::getFromQuaternion(Quaternion q) {
 	roll = rad2deg(roll);
 	pitch = rad2deg(pitch);
 	yaw = rad2deg(yaw);
+}
+
+void TaitBryan::getAnglesInRadFromQuaternion(Quaternion q) {
+    roll = atan2f((q.w * q.x + q.y * q.z), 0.5f - (q.x * q.x + q.y * q.y));
+    pitch = asinf(-2.0f * (q.x * q.z - q.w * q.y));
+    yaw = atan2f((q.x * q.y + q.w * q.z), 0.5f - (q.y * q.y + q.z * q.z));
+}
+
+SphericalCoordinate::SphericalCoordinate() {
+	r = 0.0f; teta = 0.0f; phi = 0.0f;
+}
+
+SphericalCoordinate::SphericalCoordinate(float r, float teta, float phi) {
+	this->r = r; this->teta = teta; this->phi = phi;
+}
+
+float SphericalCoordinate::calculateRFromCartesian(float x, float y, float z) {
+	return calculateMagnitude3D(x, y , z);
+}
+
+float SphericalCoordinate::calculateTetaFromCartesian(float x, float y, float z) {
+	return acosf(z / calculateMagnitude3D(x, y, z));
+}
+
+float SphericalCoordinate::calculatePhiFromCartesian(float x, float y, float z) {
+	return atan2f(y, x);
 }
