@@ -30,9 +30,9 @@
 
 // frame constants
 #define FRAME_SIZE                      (6)
-#define OFFSET_ASCII		            (32)
-#define DEL_CHAR			            (127)
 #define LIMIT_MOVEMENT		            (80)
+#define NO_MOVEMENT                     (0)
+#define END_FRAME_VAL                   ((char)127)
 
 enum FrameComponent {
     MOUSE_MODE, 
@@ -62,6 +62,7 @@ public:
 
     MouseController(int btnFunc_pin, int btnLB_pin, int btnRB_pin);
     void checkModes();
+    void setModes(MouseModes mouse_mode, ButtonModes left, ButtonModes right);
     Frame getFrame() { return frame; }
     Frame updateFrame(Vect3D<float> gyro, TaitBryan tb_angles, bool dynamic = true);
 
@@ -70,13 +71,13 @@ public:
         if (ext.length() <= 0) {
             if (eco) {
                 if (!(frame.data[MOUSE_MODE] == MOVE &&
-                    fabs(frame.data[DELTA_X]) == OFFSET_ASCII &&
-                    fabs(frame.data[DELTA_Y]) == OFFSET_ASCII)) {
-                    target.print(frame.data);
+                    fabs(frame.data[DELTA_X]) == NO_MOVEMENT &&
+                    fabs(frame.data[DELTA_Y]) == NO_MOVEMENT)) {
+                    target.write(frame.data, frame.size);
                     target.flush();
                 }
             } else {
-                target.print(frame.data);
+                target.write(frame.data, frame.size);
                 target.flush();
             }
         } else {

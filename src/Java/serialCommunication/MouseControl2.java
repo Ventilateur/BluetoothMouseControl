@@ -8,26 +8,23 @@ import java.awt.event.InputEvent;
 import processing.core.PApplet;
 import processing.serial.Serial;
 
-public class MouseControl extends PApplet {
+public class MouseControl2 extends PApplet {
 
-	private static final float _OFFSET_ASCII = 32.0f;
-	private static final float _MAX_POSITIF_VAL = 155.0f;
-	private static final float _MAX_8_BITS_VAL = 255.0f;
 	private static final int _MODE = 0;
 	private static final int _LB = 1;
 	private static final int _RB = 2;
-	private static final int _dR_VAL = 3;
-	private static final int _dP_VAL = 4;
+	private static final int _dX_VAL = 3;
+	private static final int _dY_VAL = 4;
 	private static final int _FRAME_LENGTH = 6;
 	private static final char _RESET_MODE = 'R';
 	private static final char _MOVE_MODE = 'M';
 	private static final char _STOP_MODE = 'S';
 	private static final char _BUTTON_PRESSED = 'P';
 	private static final char _BUTTON_RELEASED = 'R';
-	private static final byte _END_OF_FRAME = '\n';
+	private static final byte _END_OF_FRAME = 127;
 	
 	private Serial serialPort;
-	private String incoming;
+	private byte[] incoming;
 	private Robot mouse;
 	private static int screenWidth;
 	private static int screenHeight;
@@ -36,7 +33,7 @@ public class MouseControl extends PApplet {
 	private boolean move;
 	private boolean LBpressed, RBpressed, LBisPressed, RBisPressed;
 
-	public MouseControl() {
+	public MouseControl2() {
 		screenWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 		screenHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 		x = xPrev = screenWidth;
@@ -75,12 +72,6 @@ public class MouseControl extends PApplet {
 	}
 	
 	private void calculateMove() {
-		// decode from ASCII-based values to readable values 
-        if (dR < _MAX_POSITIF_VAL) dR -= _OFFSET_ASCII;
-        else dR -= _MAX_8_BITS_VAL; 
-        if (dP < _MAX_POSITIF_VAL) dP -= _OFFSET_ASCII;
-        else dP -= _MAX_8_BITS_VAL;
-      
         // calculate absolute position
         if (dR != 0.0f) x = xPrev - (int)((aX + bX * exp((float)(cX * abs(dR)))) * dR / abs(dR));
         if (dP != 0.0f) y = yPrev - (int)((aY + bY * exp((float)(cY * abs(dP)))) * dP / abs(dP));
@@ -92,14 +83,14 @@ public class MouseControl extends PApplet {
         else if (y > screenHeight) y = screenHeight;
 	}
 	
-	private void processData(String data) {
-		if (data.length() == _FRAME_LENGTH) {
+	private void processData(byte[] data) {
+		if (data.length == _FRAME_LENGTH) {
 		    // check mouse mode
-		    switch (data.charAt(_MODE)) {
+		    switch (data[_MODE]) {
 		    case (_MOVE_MODE):
 		    	move = true;
-	        	dR = (float)(data.charAt(_dR_VAL));
-	        	dP = (float)(data.charAt(_dP_VAL));
+	        	dR = (float)(data[_dX_VAL]);
+	        	dP = (float)(data[_dY_VAL]);
 	        	calculateMove();
 	        	break;
 		    case (_RESET_MODE):
@@ -116,7 +107,7 @@ public class MouseControl extends PApplet {
 		    }
 		    
 		    // check LB's state
-		    switch (data.charAt(_LB)) {
+		    switch (data[_LB]) {
 		    case (_BUTTON_PRESSED):
 		    	LBpressed = true;
 		    	break;
@@ -129,7 +120,7 @@ public class MouseControl extends PApplet {
 		    }
 		    
 		    // check RB's state
-		    switch (data.charAt(_RB)) {
+		    switch (data[_RB]) {
 		    case (_BUTTON_PRESSED):
 		    	RBpressed = true;
 		    	break;
@@ -144,8 +135,8 @@ public class MouseControl extends PApplet {
 	}
 
 	public void serialEvent(Serial serialPort) {
-		incoming = serialPort.readString();
-		System.out.println(incoming);
+		incoming = serialPort.readBytes();
+		for (byte b : incoming) System.out.println(b);
 		processData(incoming);
 		if (move) {
 			mouse.mouseMove(x, y);

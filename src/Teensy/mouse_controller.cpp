@@ -34,6 +34,12 @@ void MouseController::checkModes() {
     if (btnRB.update()) _RBUpdate();
 }
 
+void MouseController::setModes(MouseModes mouse_mode, ButtonModes left, ButtonModes right) {
+    this->mouseMode = mouse_mode;
+    this->LB = left;
+    this->RB = right;
+}
+
 MouseController::Frame MouseController::updateFrame(Vect2D<int8_t> delta) {
     // switch mouse mode
     switch (mouseMode) {
@@ -41,14 +47,14 @@ MouseController::Frame MouseController::updateFrame(Vect2D<int8_t> delta) {
         _setFrame(MOVE, LB, RB, delta.x, delta.y);
         break;
     case STOP:
-        _setFrame(STOP, LB, RB, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(STOP, LB, RB, NO_MOVEMENT, NO_MOVEMENT);
         break;
     case RESET:
-        _setFrame(RESET, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(RESET, RELEASED, RELEASED, NO_MOVEMENT, NO_MOVEMENT);
         mouseMode = MOVE;
         break;
     default:
-        _setFrame(STOP, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(STOP, RELEASED, RELEASED, NO_MOVEMENT, NO_MOVEMENT);
         break;
     }
     return frame;
@@ -62,14 +68,14 @@ MouseController::Frame MouseController::updateFrame(Vect3D<float> gyro, TaitBrya
         _setFrame(MOVE, LB, RB, delta.x, delta.y);
         break;
     case STOP:
-        _setFrame(STOP, LB, RB, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(STOP, LB, RB, NO_MOVEMENT, NO_MOVEMENT);
         break;
     case RESET:
-        _setFrame(RESET, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(RESET, RELEASED, RELEASED, NO_MOVEMENT, NO_MOVEMENT);
         mouseMode = MOVE;
         break;
     default:
-        _setFrame(STOP, RELEASED, RELEASED, OFFSET_ASCII, OFFSET_ASCII);
+        _setFrame(STOP, RELEASED, RELEASED, NO_MOVEMENT, NO_MOVEMENT);
         break;
     }
     return frame;
@@ -81,7 +87,7 @@ void MouseController::_setFrame(int8_t mouseMode, int8_t LB, int8_t RB, int8_t d
     frame.data[RB_STATE] = RB;
     frame.data[DELTA_X] = dx;
     frame.data[DELTA_Y] = dy;
-    frame.data[END_FRAME] = '\n';
+    frame.data[END_FRAME] = END_FRAME_VAL;
 }
 
 
@@ -113,10 +119,8 @@ Vect2D<int8_t> MouseController::calculateMousePos(Vect2D<int> delta) {
 
     // update x and y values, avoiding command characters (00-32 and 127)
     Vect2D<int8_t> ret;
-    ret.x = (int8_t)delta.x >= 0 ? (int8_t)delta.x + OFFSET_ASCII : (int8_t)delta.x;
-    if (ret.x == DEL_CHAR) ret.x = DEL_CHAR - 1;
-    ret.y = (int8_t)delta.y >= 0 ? (int8_t)delta.y + OFFSET_ASCII : (int8_t)delta.y;
-    if (ret.y == DEL_CHAR) ret.y = DEL_CHAR - 1;
+    ret.x = (int8_t)delta.x;
+    ret.y = (int8_t)delta.y;
     return ret;
 }
 
@@ -145,9 +149,8 @@ void MouseController::_FuncUpdate() {
         pulseLength = millis() - risingMoment;
 
         // mode 1: button click - reset position by sending command 'R'
-        if (pulseLength <= BUTTON_RESET_TIME) mouseMode = RESET;
+        if (pulseLength <= DEFAULT_BTN_RESET_TIME) mouseMode = RESET;
         // mode 2: button pressed - NaN, to be configured
-        else if (pulseLength <= BUTTON_CALIB_TIME) mouseMode = MOVE;
         else mouseMode = MOVE;
 
         // check if there is a mode changement
