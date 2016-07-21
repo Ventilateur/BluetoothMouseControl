@@ -49,7 +49,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		controller.setCoefficientsAxeX(1.0f, 0.4f, 0.08f);
+		controller.setCoefficientsAxeX(1.0f, 0.5f, 0.06f);
 		controller.setCoefficientsAxeY(1.0f, 1.5f, 0.05f);
 		switch (args.length) {
 		case (0):

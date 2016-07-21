@@ -9,9 +9,9 @@
 	#include "WProgram.h"
 #endif
 
-#define br      Serial.println()
-#define comma   Serial.print(" , ")
-#define sflush  Serial.flush()
+#define br          Serial.println()
+#define comma       Serial.print(" , ")
+#define sflush      Serial.flush()
 
 template<typename T>
 inline void print(T val1, T val2, T val3, String header="") {
@@ -19,7 +19,17 @@ inline void print(T val1, T val2, T val3, String header="") {
 }
 
 template<typename T>
-inline void println(T val1, T val2, T val3, String header="") {
+inline void println(T val1, String header = "") {
+    Serial.println(header + String(val1));
+}
+
+template<typename T>
+inline void println(T val1, T val2, String header="") {
+    Serial.println(header + String(val1) + " , " + val2);
+}
+
+template<typename T>
+inline void println(T val1, T val2, T val3, String header = "") {
     Serial.println(header + String(val1) + " , " + val2 + " , " + val3);
 }
 

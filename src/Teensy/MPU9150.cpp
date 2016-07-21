@@ -12,7 +12,7 @@ MPU9150::MPU9150() : MPU6050() {
 }
 
 void MPU9150::calibrate() {
-	Vect3D_float mag;
+	Vect3D<float> mag;
 	if (getIntDataReadyStatus() == 1) {
 		getMagnetoScaled(&mag.x, &mag.y, &mag.z);
 		if (min_x >= mag.x) min_x = mag.x; if (max_x <  mag.x) max_x = mag.x;

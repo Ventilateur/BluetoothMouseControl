@@ -14,15 +14,22 @@
 // ********************** MODIFIALBE ZONE ******************* //
 // ********************************************************** //
 
+// hardware constants
+#define BUILT_IN_LED	    13
+#define BLUETOOTH		    Serial2
+
 // general configurations 
 #define DYNAMIQUE_ANGLES    (true)
 #define ECO_MODE            (true)
 #define BT_BAUDRATE			(57600)
-#define K                   (1)
 
 // debug modes
-#define DEBUG				(false)
+#define DEBUG				(true)
 #define LOOP_RATE_DISP		(false)
+
+// Madgwick filter 
+#define BETA                (7.5f)
+#define freq(dt)            (1000.0f / dt)
 
 // buttons' constants
 #define FUNC_BUTTON			(20)
@@ -34,8 +41,8 @@
 // MPU configuration
 #define SAMPLE_RATE			(7)
 #define LPF_MODE			(5)
-#define GYRO_RANGE_MODE		(2)
-#define ACCEL_RANGE_MODE	(2)
+#define GYRO_RANGE_MODE		(0)
+#define ACCEL_RANGE_MODE	(0)
 #define INT_ENABLE			(true)
 
 // gyroscope's filters configuration
@@ -57,14 +64,6 @@
 #define LOOP_DELAY_MS		(0)
 #define SEND_RATE_MS		(0)
 
-// frame constants
-#define OFFSET_ASCII		(32)
-#define DEL_CHAR			(127)
-#define LIMIT_MOVEMENT		(80)
-
-// modes
-enum MouseModes {MOVE = 'M', STOP = 'S', RESET = 'R'};
-enum ButtonModes {PRESSED = 'P', RELEASED = 'R'};
 
 #endif
 

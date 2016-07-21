@@ -3,9 +3,12 @@
 #ifndef _MPU9150_h
 #define _MPU9150_h
 
-#include <I2Cdev.h>
-#include <i2c_t3.h>
-#include <MPU6050.h>
+#ifndef INCLUDE_IN_INO
+    #include <I2Cdev.h>
+    #include <i2c_t3.h>
+    #include <MPU6050.h>  
+#endif // !INCLUDE_IN_INO
+
 
 // magneto parameters
 
