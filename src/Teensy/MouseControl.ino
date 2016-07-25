@@ -35,9 +35,9 @@ void setup() {
     Serial.begin(BT_BAUDRATE);
     BLUETOOTH.begin(BT_BAUDRATE);
     setupIMU();
-    lpf.setFilters(LOWPASS_BESSEL, 10.0f);
-    gyroLpf.setFilters(LOWPASS_BESSEL, 10.0f);
-    accelLpf.setFilters(LOWPASS_BESSEL, 10.0f);
+    lpf.setFilters(LOWPASS_BESSEL, 5.0f);
+    gyroLpf.setFilters(LOWPASS_BESSEL, 5.0f);
+    accelLpf.setFilters(LOWPASS_BESSEL, 5.0f);
     dt = 0;
     time = millis();
     pinMode(LED_BUILTIN, OUTPUT);
@@ -49,10 +49,13 @@ void loop() {
     time = millis();
     mouse.checkModes();
     getMotion();
-    Vect2D<int> d1 = mouse.convert3DTo2DMovement(data.gyro, getOrientation(data.gyro, data.accel), true);
+    TaitBryan tb = getOrientation(data.gyro, data.accel);
+    Vect2D<int> d1 = mouse.convert3DTo2DMovement(data.gyro, tb, true);
     Vect2D<int8_t> d2 = mouse.calculateMousePos(d1);
     mouse.updateFrame(d2); 
     mouse.sendFrame(Serial);
+    //println(DEG(tb.roll), DEG(tb.pitch));
+    //println(d2.x, d2.y);
     if (millis() - blinkTime > 500) {
         ledOn = !ledOn;
         blinkTime = millis();
@@ -76,17 +79,19 @@ void getMotion() {
         mpu.getGyroScaled(&data.gyro.x, &data.gyro.y, &data.gyro.z);
         mpu.getAccelScaled(&data.accel.x, &data.accel.y, &data.accel.z);
     }
-    data.gyro = gyroLpf.filter(data.gyro.x, data.gyro.y, data.gyro.z);
-    data.accel = accelLpf.filter(data.accel.x, data.accel.y, data.accel.z);
+    for (int i = 0; i < 5; i++) {
+        data.gyro = gyroLpf.filter(data.gyro.x, data.gyro.y, data.gyro.z);
+        data.accel = accelLpf.filter(data.accel.x, data.accel.y, data.accel.z);
+    }
 }
 
 TaitBryan getOrientation(Vect3D<float> gyro, Vect3D<float> accel) {
     static int last = 0;
     int dt = millis() - last;
     last = millis();
-    madgwick.updateIMU(freq(dt), BETA,
-                       radians(gyro.x), radians(gyro.y), radians(gyro.z),
-                       accel.x, accel.y, accel.z);
+    madgwick.update(freq(dt), BETA,
+                    radians(gyro.x), radians(gyro.y), radians(gyro.z),
+                    accel.x, accel.y, accel.z, 1.0f, 1.0f, 1.0f);
     TaitBryan tb_angles(Quaternion(madgwick.q0, madgwick.q1, madgwick.q2, madgwick.q3));
     Vect3D<float> ret;
     for (int i = 0; i < 5; i++) ret = lpf.filter(tb_angles.roll, tb_angles.pitch, 0.0f);

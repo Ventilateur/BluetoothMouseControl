@@ -95,8 +95,7 @@ Vect2D<int> MouseController::convert3DTo2DMovement(Vect3D<float> gyro, TaitBryan
     Vect2D<int> delta;
     if (dynamic) {
         delta.x = (int)(K * (gyro.z * cosf(tb_angles.roll) +
-                             gyro.y * sinf(tb_angles.roll) +
-                             gyro.x * sinf(tb_angles.pitch)));
+                             gyro.y * sinf(tb_angles.roll) / cosf(tb_angles.pitch)));
         delta.y = (int)(K * (gyro.y * cosf(tb_angles.roll) -
                              gyro.z * sinf(tb_angles.roll)));
     } else {

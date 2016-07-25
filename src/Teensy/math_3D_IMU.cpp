@@ -59,7 +59,7 @@ Quaternion operator+(const Quaternion& q1, const Quaternion& q2) {
 
 
 // ===================================================================== //
-// ==================== Tait–Bryan angles section ====================== //
+// ==================== Taitï¿½Bryan angles section ====================== //
 // ===================================================================== //
 
 TaitBryan::TaitBryan() {
@@ -89,22 +89,23 @@ void TaitBryan::getFrom3dVect(Vect3D<float> accel, Vect3D<float> gyro, Vect3D<fl
 }
 
 void TaitBryan::getAnglesInDegFromQuaternion(Quaternion q) {
-	roll = atan2f((q.w * q.x + q.y * q.z), 0.5f - (q.x * q.x + q.y * q.y));
-	pitch = asinf(-2.0f * (q.x * q.z - q.w * q.y));
-	yaw = atan2f((q.x * q.y + q.w * q.z), 0.5f - (q.y * q.y + q.z * q.z));
-
+	getAnglesInRadFromQuaternion(q);
 	roll = rad2deg(roll);
 	pitch = rad2deg(pitch);
 	yaw = rad2deg(yaw);
 }
 
-void TaitBryan::getAnglesInRadFromQuaternion(Quaternion q) {
-    roll = atan2f((q.w * q.x + q.y * q.z), 0.5f - (q.x * q.x + q.y * q.y));
-    pitch = asinf(-2.0f * (q.x * q.z - q.w * q.y));
-    yaw = atan2f((q.x * q.y + q.w * q.z), 0.5f - (q.y * q.y + q.z * q.z));
-}
+ void TaitBryan::getAnglesInRadFromQuaternion(Quaternion q) {
+     float testGimbalLock = -2.0f * (q.x * q.z - q.w * q.y);
+     pitch = asinf(testGimbalLock);
+     yaw = atan2f((q.x * q.y + q.w * q.z), 0.5f - (q.y * q.y + q.z * q.z));
+     if (fabs(testGimbalLock) > 0.899)
+         roll = 0.001f; 
+     else
+         roll = atan2f((q.w * q.x + q.y * q.z), 0.5f - (q.x * q.x + q.y * q.y));
+ }
+
 
 TaitBryan operator-(const TaitBryan & a, const TaitBryan & b) {
     return TaitBryan(a.yaw - b.yaw, a.pitch - b.pitch, a.roll - b.roll);
 }
-
